@@ -4,6 +4,9 @@ html
     link rel='stylesheet' type='text/css' href='//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.css'
     style
       |
+        .table-header {
+          font-weight: bold;
+        }
         html {
           font-family: sans-serif;
         }
@@ -41,6 +44,11 @@ html
           .content
             |
               test1
+        .ui.grid.container.table-header
+          .seven.wide.column Subject
+          .three.wide.column Date
+          .three.wide.column From
+          .three.wide.column To
         .item v-for='item in result'
           .content
             .ui.accordion
@@ -55,7 +63,7 @@ html
                     .content = '{{item.to}}'
                 .ui.grid.container
                   .seven.wide.column.subject = '{{item.subject}}'
-                  .three.wide.column.date = '{{item.date}}'
+                  .three.wide.column.date = '{{item.date | formatDate}}'
                   .three.wide.column.from = '{{item.from}}'
                   .three.wide.column.to = '{{item.to}}'
               .content
@@ -72,7 +80,7 @@ html
 
     script src='//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js'
     script src='//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.js'
-    script src='//unpkg.com/vue@next/dist/vue.js'
+    script src='//cdnjs.cloudflare.com/ajax/libs/vue/2.0.3/vue.min.js'
     script
       |
         $(document).ready(() => {
@@ -80,7 +88,12 @@ html
           $('.ui.accordion').accordion()
         })
         $('.button').on('submit', e => e.preventDefault())
+        $('form').on('submit', () => console.log('aaaaaaaaa'))
 
+        Vue.filter('formatDate', function(value) {
+          var d = new Date(1000 * +value)
+          return d.toLocaleString()
+        })
         var z = new Vue({
           el: '#app',
           data: {
@@ -118,7 +131,7 @@ html
               if (this.subject) query.subject = this.subject
               var q = Object.keys(query).map(key => encodeURIComponent(key) + "=" + encodeURIComponent(query[key])).join('&').replace(/%20/g, '+')
               console.log(q)
-              fetch(`http://localhost:5000/api/query?${q}`).then(res => res.json()).then(json => {
+              fetch(`/api/query?${q}`).then(res => res.json()).then(json => {
                 this.result.splice(0, this.result.length, ...json)
                 console.log(this.result)
                 console.log(json)

@@ -3,6 +3,9 @@
   <head>
     <link href="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.css" rel="stylesheet" type="text/css" />
     <style>
+      .table-header {
+        font-weight: bold;
+      }
       html {
         font-family: sans-serif;
       }
@@ -38,6 +41,20 @@
         </div>
       </form>
       <div class="ui middle aligned divided list" id="result">
+        <div class="ui grid container table-header">
+          <div class="seven wide column">
+            Subject
+          </div>
+          <div class="three wide column">
+            Date
+          </div>
+          <div class="three wide column">
+            From
+          </div>
+          <div class="three wide column">
+            To
+          </div>
+        </div>
         <div class="item" v-for="item in result">
           <div class="content">
             <div class="ui accordion">
@@ -48,7 +65,7 @@
                     {{item.subject}}
                   </div>
                   <div class="three wide column date">
-                    {{item.date}}
+                    {{item.date | formatDate}}
                   </div>
                   <div class="three wide column from">
                     {{item.from}}
@@ -68,14 +85,19 @@
     </div>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.js"></script>
-    <script src="//unpkg.com/vue@next/dist/vue.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.0.3/vue.min.js"></script>
     <script>
       $(document).ready(() => {
         $('.ui.dropdown').dropdown()
         $('.ui.accordion').accordion()
       })
       $('.button').on('submit', e => e.preventDefault())
+      $('form').on('submit', () => console.log('aaaaaaaaa'))
       
+      Vue.filter('formatDate', function(value) {
+        var d = new Date(1000 * +value)
+        return d.toLocaleString()
+      })
       var z = new Vue({
         el: '#app',
         data: {
@@ -113,7 +135,7 @@
             if (this.subject) query.subject = this.subject
             var q = Object.keys(query).map(key => encodeURIComponent(key) + "=" + encodeURIComponent(query[key])).join('&').replace(/%20/g, '+')
             console.log(q)
-            fetch(`http://localhost:5000/api/query?${q}`).then(res => res.json()).then(json => {
+            fetch(`/api/query?${q}`).then(res => res.json()).then(json => {
               this.result.splice(0, this.result.length, ...json)
               console.log(this.result)
               console.log(json)
