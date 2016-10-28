@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 from flask import Flask, request, Response
+from flask.ext.cors import CORS
 import chardet, email.utils, json, os, re, subprocess
 
 app = Flask(__name__)
+CORS(app)
+
 email_dir = '/home/user/mail'
 
 
@@ -24,7 +27,7 @@ def show(path):
                     elif k == 'subject':
                         ret['subject'] = v
                 ret['body'] = part.get_payload(decode=True).decode(part.get_content_charset() or 'utf-8', 'ignore')
-    return ret
+                return ret
 
 
 @app.route('/api/query')
@@ -41,13 +44,14 @@ def api_query():
         for i in ['from', 'to', 'subject', 'id', 'attachment', 'mimetype', 'thread', 'date']:
             if i in args:
                 argv.append(i+':'+args[i])
-        if 'term' in args:
-            argv.append(args['term'])
+        argv.append(args.get('term', '*') or '*')
         output = subprocess.check_output(argv).decode()
         ret = []
         for filename in output.split('\n'):
             if len(filename):
-                ret.append(show(filename))
+                item = show(filename)
+                if item:
+                    ret.append(item)
         return Response(json.dumps(ret), mimetype='application/json')
         #return '\n'.join(re.sub('.*/', '', filename) for filename in output.split('\n'))
     except subprocess.CalledProcessError:

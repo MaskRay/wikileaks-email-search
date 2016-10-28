@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.css" rel="stylesheet" type="text/css" />
+    <style>
+      html {
+        font-family: sans-serif;
+      }
+      .subject {
+        color: blue;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ui main container" id="app">
+      <h1 class="ui center aligned header">
+        WikiLeaks Email Search
+      </h1>
+      <form class="ui form">
+        <div class="two fields">
+          <div class="field">
+            <label>Subject</label><input name="subject" v-model="subject" />
+          </div>
+          <div class="field">
+            <label>Body</label><input name="term" v-model="term" />
+          </div>
+        </div>
+        <div class="two fields">
+          <div class="field">
+            <label>From</label><input name="from" v-model="from" />
+          </div>
+          <div class="field">
+            <label>To</label><input name="to" v-model="to" />
+          </div>
+        </div>
+        <div class="ui button" v-on:click="search">
+          Search
+        </div>
+      </form>
+      <div class="ui middle aligned divided list" id="result">
+        <div class="item" v-for="item in result">
+          <div class="content">
+            <div class="ui accordion">
+              <div class="active title">
+                <i class="dropdown icon"></i>
+                <div class="ui grid container">
+                  <div class="seven wide column subject">
+                    {{item.subject}}
+                  </div>
+                  <div class="three wide column date">
+                    {{item.date}}
+                  </div>
+                  <div class="three wide column from">
+                    {{item.from}}
+                  </div>
+                  <div class="three wide column to">
+                    {{item.to}}
+                  </div>
+                </div>
+              </div>
+              <div class="content">
+                <pre>{{item.body}}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.js"></script>
+    <script src="//unpkg.com/vue@next/dist/vue.js"></script>
+    <script>
+      $(document).ready(() => {
+        $('.ui.dropdown').dropdown()
+        $('.ui.accordion').accordion()
+      })
+      $('.button').on('submit', e => e.preventDefault())
+      
+      var z = new Vue({
+        el: '#app',
+        data: {
+          term: '',
+          subject: '',
+          from: '',
+          to: '',
+      
+          message: 'Hello Vue.js!',
+          result: [{
+            body: 'body',
+            subject: 'subject',
+            from: 'a@aa',
+            to: 'a@aa',
+          }, {
+            body: 'body2',
+            subject: 'subject2',
+            from: 'a@aa',
+            to: 'a@aa',
+          }, {
+            body: 'body3',
+            subject: 'subject3',
+            from: 'a@aa',
+            to: 'a@aa',
+          }]
+        },
+        methods: {
+          search: function(event) {
+            console.log(this.subject)
+            console.log('search', event)
+            var query = {}
+            query.term = this.term
+            if (this.from) query.from = this.from
+            if (this.to) query.to = this.to
+            if (this.subject) query.subject = this.subject
+            var q = Object.keys(query).map(key => encodeURIComponent(key) + "=" + encodeURIComponent(query[key])).join('&').replace(/%20/g, '+')
+            console.log(q)
+            fetch(`http://localhost:5000/api/query?${q}`).then(res => res.json()).then(json => {
+              this.result.splice(0, this.result.length, ...json)
+              console.log(this.result)
+              console.log(json)
+            })
+          }
+        }
+      })
+    </script>
+  </body>
+</html>
